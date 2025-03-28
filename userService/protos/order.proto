@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message ProductDetail{
+    string productId = 1;
+    int32 quantity = 2;
+}
+
+message Order{
+    string id = 1;
+    string userId = 2;
+    repeated ProductDetail products = 3;
+    int32 quantity = 4;
+    float price = 5;
+}
+
+service OrderService{
+    rpc GetOrder(Order) returns (Order);
+    rpc CreateOrder(Order) returns (Order);
+    rpc UpdateOrder(Order) returns (Order);
+    rpc DeleteOrder(Order) returns (Order);
+}
+
+
+

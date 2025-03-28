@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+message User{
+    string id = 1;
+    string username = 2;
+    string password = 3;
+}
+
+message jwtToken{
+    string token = 1;
+}
+
+service UserService{
+    rpc GetUser(User) returns (User);
+    rpc CreateUser(User) returns (User);
+    rpc UpdateUser(User) returns (User);
+    rpc DeleteUser(User) returns (User);
+    rpc Login(User) returns (jwtToken);
+}

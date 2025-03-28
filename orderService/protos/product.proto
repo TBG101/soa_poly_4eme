@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+message Product{
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    float price = 4;
+    int32 stock = 5;
+}
+
+message ProductList{
+    repeated Product products = 1;
+}
+
+service ProductService{
+    rpc GetProduct(Product) returns (Product);
+    rpc GetProductList(ProductList) returns (ProductList);
+    rpc CreateProduct(Product) returns (Product);
+    rpc UpdateProduct(Product) returns (Product);
+    rpc DeleteProduct(Product) returns (Product);
+}
