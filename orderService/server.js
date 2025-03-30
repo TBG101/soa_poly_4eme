@@ -1,41 +1,30 @@
-import express from "express";
+import { grpcOrderMethods } from "./lib/grpcOrderMethods.js";
 import mongoose from "mongoose";
 import { Kafka } from "kafkajs";
 import dotenv from "dotenv";
+import grpc from "@grpc/grpc-js";
+import protoLoader from "@grpc/proto-loader";
 
 dotenv.config({
   path: "../.env",
 });
 
-const app = express();
-app.use(express.json());
+// Load gRPC Protobuf
+const orderProto = protoLoader.loadSync("./protos/order.proto");
+const orderGrpc = grpc.loadPackageDefinition(orderProto).OrderService;
 
 mongoose.connect(process.env.MONGO_URI, {
   dbName: "orders",
 });
 
-// Kafka Setup
-const kafka = new Kafka({
-  clientId: "order-service",
-  brokers: ["localhost:9092"],
-});
+// Start gRPC Server
+const grpcServer = new grpc.Server();
+grpcServer.addService(orderGrpc.service, grpcOrderMethods);
 
-const producer = kafka.producer();
-producer.connect();
-
-// Create Order
-app.post("/order", async (req, res) => {
-  const { productId, quantity } = req.body;
-  const order = new Order({ productId, quantity, status: "pending" });
-  await order.save();
-
-  // Emit Kafka Event
-  await producer.send({
-    topic: "order_placed",
-    messages: [{ value: JSON.stringify({ productId, quantity }) }],
-  });
-
-  res.json({ message: "Order placed" });
-});
-
-app.listen(5003, () => console.log("Order service running on port 5003"));
+grpcServer.bindAsync(
+  "0.0.0.0:5003",
+  grpc.ServerCredentials.createInsecure(),
+  () => {
+    console.log("🟢 gRPC User Service running on port 5003");
+  }
+);

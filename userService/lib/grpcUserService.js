@@ -1,8 +1,9 @@
 import User from "../models/User.js";
 import { isPasswordValid, isUserNameValid } from "./utils.js";
 import jwt from "jsonwebtoken"; // added
+import Bcrypt from "bcrypt"; // added
 
-const getUser = (call, callback) => {
+const GetUser = (call, callback) => {
   User.findById(call.request.id)
     .then((user) => {
       if (!user) return callback(new Error("User not found"));
@@ -11,7 +12,7 @@ const getUser = (call, callback) => {
     .catch((err) => callback(err));
 };
 
-const createUser = (call, callback) => {
+const CreateUser = (call, callback) => {
   const { username, password } = call.request;
   if (!isPasswordValid(password) && !isUserNameValid(username))
     return callback(new Error("Invalid username and password"));
@@ -58,9 +59,13 @@ const DeleteUser = (call, callback) => {
 // New login method to generate a JWT on valid credentials.
 const Login = (call, callback) => {
   const { username, password } = call.request;
-  User.findOne({ username, password })
+  User.findOne({ username })
     .then((user) => {
-      if (!user) return callback(new Error("Invalid username or password"));
+      // Check password & username validity
+      if (Bcrypt.compareSync(password, user.password) === false && !user) {
+        return callback(new Error("Invalid username or password"));
+      }
+
       // Generate jwt token valid for 30d
       const token = jwt.sign(
         { id: user.id, username: user.username },
@@ -72,11 +77,9 @@ const Login = (call, callback) => {
     .catch((err) => callback(err));
 };
 
-
-
 export const userMethods = {
-  getUser,
-  createUser,
+  GetUser,
+  CreateUser,
   UpdateUser,
   DeleteUser,
   Login,

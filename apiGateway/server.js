@@ -7,7 +7,9 @@ import { createResolvers } from "./lib/graphQL/gplResolvers.js";
 import { getSchema } from "./lib/graphQL/SchemaBuilder.js";
 import { addResolversToSchema } from "@graphql-tools/schema";
 import jwt from "jsonwebtoken";
-dotenv.config();
+dotenv.config({
+  path: "../.env",
+});
 
 const app = express();
 
@@ -65,13 +67,20 @@ const server = new ApolloServer({
     schema,
     resolvers,
   }),
-  context: ({ req }) => {
+  context: async ({ req }) => {
+    if (!req.headers.authorization) {
+      return { user: null };
+    }
     const token = req.headers.authorization.replace("Bearer ", "");
     const user = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) return { user: null };
+      if (err) {
+        console.error("Token verification error: ", err);
+        return { user: null };
+      }
       return { user: decoded };
     });
-    return { user };
+
+    return user;
   },
 });
 
@@ -81,7 +90,7 @@ async function startServer() {
 
   // Start API Gateway
   app.listen(5000, () => {
-    console.log(`API Gateway running on port ${PORT}`);
+    console.log(`API Gateway running on port 5000`);
   });
 }
 

@@ -5,28 +5,65 @@ type User {
 
 type Product {
   id: ID!
-  name: String!
-  description: String!
-  stock: Int!
-  price: Float!
+  name: String
+  description: String
+  stock: Int
+  price: Float
+}
+
+type OrderProduct {
+  productId: ID!
+  quantity: Int!
 }
 
 type Order {
   id: ID!
-  productId: ID!
-  quantity: Int!
-  status: String!
+  userId: ID!
+  products: [OrderProduct]!
+  price: Float!
+}
+
+type jwtToken {
+  token: String!
+}
+
+type ProductListResponse {
+  page: Int
+  limit: Int
+  total: Int
+  totalPage: Int
+  search: String
+  products: [Product!]
 }
 
 type Query {
-  getUser(id: ID!): User
+  getUser: User
   getProduct(id: ID!): Product
+  getProductList(page: Int, limit: Int, search: String): ProductListResponse
   getOrder(id: ID!): Order
+  getOrderById(orderId: ID!): Order
+  getOrdersByUserId: [Order]
+}
+
+input ProductDetail {
+  productId: ID
+  quantity: Int
 }
 
 type Mutation {
+  # Mutations for user
   createUser(username: String!, password: String!): User
-  createProduct(name: String!, stock: Int!, price: Float!): Product
-  createOrder(productId: ID!, quantity: Int!): Order
-  login(username: String!, password: String!): String
+
+  # order
+  createOrder(products: [ProductDetail]): Order
+
+  # product
+  createProduct(
+    name: String!
+    stock: Int!
+    description: String!
+    price: Float!
+  ): Product
+
+  login(username: String!, password: String!): jwtToken!
 }

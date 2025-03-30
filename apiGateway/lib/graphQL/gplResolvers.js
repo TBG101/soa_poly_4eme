@@ -1,15 +1,12 @@
-/**
- * @param {*} userClient
- * @param {*} productClient
- * @param {*} orderClient
- * @returns
- */
-
 export const createResolvers = (userClient, productClient, orderClient) => {
   return {
     Query: {
-      getUser: (_, { id }, { user }) =>
+      getUser: (_, {}, { user }) =>
         new Promise((resolve, reject) => {
+          const { id } = user;
+          if (!id) {
+            return reject(new Error("Unauthorized"));
+          }
           userClient.GetUser({ id }, (err, response) => {
             if (err) reject(err);
             resolve(response);
@@ -24,13 +21,39 @@ export const createResolvers = (userClient, productClient, orderClient) => {
           });
         }),
 
-      getOrder: (_, { id }, { user }) =>
+      getOrdersByUserId: (_, {}, { user }) => {
+        return new Promise((resolve, reject) => {
+          const { id } = user;
+          if (!id) {
+            return reject(new Error("Unauthorized"));
+          }
+
+          orderClient.GetOrderByUserId({ id }, (err, response) => {
+            if (err) reject(err);
+            resolve(response);
+          });
+        });
+      },
+
+      getOrderById: (_, { orderId }, { user }) =>
         new Promise((resolve, reject) => {
-          orderClient.GetOrder({ id }, (err, response) => {
+          orderClient.GetOrderById({ id: orderId }, (err, response) => {
             if (err) reject(err);
             resolve(response);
           });
         }),
+
+      getProductList: (_, { page, pageSize: limit, search }, { user }) => {
+        return new Promise((resolve, reject) => {
+          productClient.GetProductList(
+            { page, pageSize: limit, search },
+            (err, response) => {
+              if (err) reject(err);
+              resolve(response);
+            }
+          );
+        });
+      },
     },
 
     Mutation: {
@@ -53,16 +76,47 @@ export const createResolvers = (userClient, productClient, orderClient) => {
           );
         }),
 
-      createOrder: (_, { userId, products, quantity, price }, { user }) =>
-        new Promise((resolve, reject) => {
-          orderClient.CreateOrder(
-            { userId, products, quantity, price },
-            (err, response) => {
-              if (err) reject(err);
-              resolve(response);
+      createOrder: (_, { products }, { user }) => {
+        // Check if user is logged in
+        if (!user || !user.id) {
+          return new Error("Unauthorized");
+        }
+
+        return new Promise((resolve, reject) => {
+          const { id: userId } = user;
+          if (!userId) {
+            return reject(new Error("Unauthorized"));
+          }
+          if (!products || products.length === 0) {
+            return reject(new Error("No products provided"));
+          }
+          products.forEach((product) => {
+            if (!product.productId || !product.quantity) {
+              return reject(new Error("Invalid product format"));
             }
-          );
-        }),
+          });
+
+          orderClient.CreateOrder({ userId, products }, (err, response) => {
+            if (err) reject(err);
+            resolve(response);
+          });
+
+          
+        });
+      },
+
+      login: (_, { username, password }, { user }) => {
+        if (user) {
+          return new Error("User already logged in");
+        }
+
+        return new Promise((resolve, reject) => {
+          userClient.Login({ username, password }, (err, response) => {
+            if (err) reject(err);
+            resolve(response);
+          });
+        });
+      },
     },
   };
 };

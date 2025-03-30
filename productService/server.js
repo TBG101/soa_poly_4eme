@@ -1,16 +1,19 @@
-import express from "express";
-import mongoose from "mongoose";
-import Product from "./models/productSchema.js";
 import { Kafka } from "kafkajs";
+import mongoose from "mongoose";
+import grpc from "@grpc/grpc-js";
+import protoLoader from "@grpc/proto-loader";
 import dotenv from "dotenv";
-
+import grpcProductMethods from "./lib/grpcProductService.js";
+import Product from "./models/productSchema.js";
 dotenv.config({
   path: "../.env",
 });
 
-const app = express();
-app.use(express.json());
+// Load gRPC Protobuf
+const productProto = protoLoader.loadSync("./protos/product.proto");
+const productGrpc = grpc.loadPackageDefinition(productProto).ProductService;
 
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   dbName: "products",
 });
@@ -20,27 +23,46 @@ const kafka = new Kafka({
   clientId: "inventory-service",
   brokers: ["localhost:9092"],
 });
+
 const consumer = kafka.consumer({ groupId: "inventory-group" });
 
-consumer.connect();
+await consumer.connect();
 consumer.subscribe({ topic: "order_placed" });
 
 consumer.run({
   eachMessage: async ({ message }) => {
-    const { productId, quantity } = JSON.parse(message.value.toString());
-    const product = await Product.findById(productId);
-    if (product) {
-      product.stock -= quantity;
-      await product.save();
-      console.log(`Stock updated for product: ${productId}`);
-    }
+    const products = JSON.parse(message.value).products;
+
+    // const productIds = products.map((product) => product.productId);
+    // const quantities = products.map((product) => product.quantity);
+
+    console.log("Received order placed event:", products);
+    console.log("Products:", products[0].productId);
+
+    products.forEach(async (product) => {
+      console.log("Products:", product.productId);
+      const productData = await Product.findById(product.productId);
+      if (productData) {
+        productData.stock -= product.quantity;
+        await productData.save();
+        console.log("Product updated:", productData);
+      } else {
+        console.error("Product not found:", product.productId);
+      }
+    });
+
+
   },
 });
 
-// Routes
-app.get("/products", async (req, res) => {
-  const products = await Product.find();
-  res.json(products);
-});
+// Start gRPC Server
+const grpcServer = new grpc.Server();
+grpcServer.addService(productGrpc.service, grpcProductMethods);
 
-app.listen(5002, () => console.log("Product service running on port 5002"));
+grpcServer.bindAsync(
+  "0.0.0.0:5002",
+  grpc.ServerCredentials.createInsecure(),
+  () => {
+    console.log("🟢 gRPC User Service running on port 5002");
+  }
+);

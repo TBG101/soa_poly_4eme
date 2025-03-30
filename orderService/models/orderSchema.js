@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 const OrderSchema = new mongoose.Schema({
-  productId: String,
-  quantity: Number,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  products: [
+    {
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      quantity: Number,
+    },
+  ],
   status: String,
 });
 const Order = mongoose.model("Order", OrderSchema);

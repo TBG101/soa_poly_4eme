@@ -6,9 +6,30 @@ message User{
     string password = 3;
 }
 
+message UserId{
+    string id = 1;
+}
+
+message UserResponse{
+    string id = 1;
+    string username = 2;
+}
+
+message UserLoginRequest{
+    string username = 1;
+    string password = 2;
+}
+
+message jwtToken{
+    string token = 1;
+}
+
 service UserService{
-    rpc GetUser(User) returns (User);
+    rpc GetUser(UserId) returns (UserResponse);
     rpc CreateUser(User) returns (User);
-    rpc UpdateUser(User) returns (User);
-    rpc DeleteUser(User) returns (User);
+    rpc Login(UserLoginRequest) returns (jwtToken);
+    
+    //TODO
+    rpc UpdateUser(UserId) returns (UserResponse);
+    rpc DeleteUser(UserId) returns (UserResponse);
 }
