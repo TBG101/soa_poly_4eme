@@ -1,4 +1,3 @@
-import e from "cors";
 import Order from "../models/orderSchema.js";
 import { productClient } from "./grpcProduct.js";
 import { producer } from "./kafka.js";
@@ -15,7 +14,12 @@ const GetOrdersByUserId = async (call, callback) => {
     return {
       id: order._id,
       userId: order ? order.userId : null,
-      products: order.products,
+      products: order.products.map((product) => {
+        return {
+          id: product.productId,
+          quantity: product.quantity,
+        };
+      }),
       price: order.price,
     };
   });
@@ -23,30 +27,24 @@ const GetOrdersByUserId = async (call, callback) => {
   callback(null, { orders: userOrders });
 };
 
-const GetOrderById = (call, callback) => {
+const GetOrderById = async (call, callback) => {
   const orderId = call.request.orderId;
 
-  Order.findById(orderId, (err, order) => {
-    if (err) {
-      return callback({
-        orders: [],
-      });
-    }
+  const order = await Order.findById(orderId);
 
-    const userOrder = {
-      id: order._id,
-      userId: order.userId,
-      products: order.products.map((product) => {
-        return {
-          id: product.id,
-          quantity: product.quantity,
-        };
-      }),
-      price: order.price,
-    };
+  const userOrder = {
+    id: order._id,
+    userId: order.userId,
+    products: order.products.map((product) => {
+      return {
+        id: product.id,
+        quantity: product.quantity,
+      };
+    }),
+    price: order.price,
+  };
 
-    callback(null, { order: userOrder });
-  });
+  callback(null, userOrder);
 };
 
 const CreateOrder = async (call, callback) => {
@@ -117,7 +115,7 @@ const CreateOrder = async (call, callback) => {
     });
 };
 
-const UpdateOrder = (call, callback) => {
+const UpdateOrder = async (call, callback) => {
   const orderId = call.request.orderId;
   const updatedOrder = {
     userId: call.request.userId,
@@ -130,7 +128,7 @@ const UpdateOrder = (call, callback) => {
     price: call.request.price,
   };
 
-  Order.findByIdAndUpdate(
+  await Order.findByIdAndUpdate(
     orderId,
     updatedOrder,
     { new: true },
