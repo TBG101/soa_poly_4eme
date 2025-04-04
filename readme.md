@@ -11,8 +11,6 @@
     - [Prerequisites](#prerequisites)
     - [Steps to Run the Project](#steps-to-run-the-project)
   - [Usage](#usage)
-  - [Future Improvements](#future-improvements)
-  - [Contributors](#contributors)
 
 ## Overview
 E-Commerce System is an advanced, full-stack e-commerce platform designed as a microservices-based architecture. This project was developed as part of a university assignment at **Polytechnique Sousse**.
@@ -24,8 +22,8 @@ E-Commerce System is an advanced, full-stack e-commerce platform designed as a m
 - **APIs**:
   - GraphQL
   - Protocol Buffers (ProtoBuf)
-- **Frontend**: (Mention the frontend technology if applicable, e.g., React, Angular, Vue.js)
-- **Containerization & Deployment**: (Mention Docker, Kubernetes, or any CI/CD tools used, if any)
+- **Frontend**: React.js
+- **Containerization & Deployment**: Docker
 
 ## Architecture
 This e-commerce system follows a microservices-based architecture. The key services include:
@@ -34,6 +32,7 @@ This e-commerce system follows a microservices-based architecture. The key servi
 - **Order Service**: Processes orders and transactions.
 - **Payment Service**: Manages payments and transactions.
 - **Notification Service**: Sends order updates and promotional notifications.
+- **Logging Service**: Handles real time data logging
 - **API Gateway**: Serves as a single entry point for client requests, using GraphQL and Protocol Buffers for communication.
 
 ## C4 Model
@@ -48,8 +47,7 @@ These diagrams provide a clear understanding of how different components interac
 ## Setup and Installation
 ### Prerequisites
 - Install **Node.js** and **npm**
-- Install **MongoDB**
-- Install **Kafka** and configure it properly
+- Install **Docker**
 
 ### Steps to Run the Project
 1. Clone the repository:
@@ -61,31 +59,19 @@ These diagrams provide a clear understanding of how different components interac
    ```sh
    npm install
    ```
-3. Start Kafka:
+3. Start Docker:
    ```sh
-   (Follow Kafka installation and startup instructions based on your OS)
+    docker-compose up # (-d for detached)
    ```
 4. Start the services:
    ```sh
    npm start
    ```
-5. Access the API via GraphQL Playground or any API testing tool.
+5. Access the API via GraphQL Apollo Playground or any API testing tool.
 
 ## Usage
-- Register and log in as a user.
 - Browse and add products to the cart.
+- Register and log in as a user.
 - Place orders and proceed to checkout.
-- Track orders via notifications.
 
-## Future Improvements
-- Implement a recommendation engine.
-- Add support for multiple payment gateways.
-- Deploy using Kubernetes for better scalability.
-
-## Contributors
-- **Your Name** - Developer
-- **Professor/Supervisor Name** - Supervisor (if applicable)
-
----
-Feel free to update this README as your project evolves!
 
