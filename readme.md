@@ -7,6 +7,8 @@
   - [Technologies Used](#technologies-used)
   - [Architecture](#architecture)
   - [C4 Model](#c4-model)
+    - [System Context](#system-context)
+    - [Container View](#container-view)
   - [Setup and Installation](#setup-and-installation)
     - [Prerequisites](#prerequisites)
     - [Steps to Run the Project](#steps-to-run-the-project)
@@ -36,11 +38,19 @@ This e-commerce system follows a microservices-based architecture. The key servi
 - **API Gateway**: Serves as a single entry point for client requests, using GraphQL and Protocol Buffers for communication.
 
 ## C4 Model
-The system architecture is illustrated using the **C4 model** diagrams, which are available in the `/images` directory:
-- `structurizr-ContainerView-key.png`
-- `structurizr-ContainerView.png`
-- `structurizr-SystemContext-001.png`
-- `structurizr-SystemContext-key.png`
+The system architecture is illustrated using the **C4 model** diagrams:
+
+### System Context
+Provides a high-level view of all system interactions:
+![System Context Key](images/structurizr-SystemContext-key.png)
+![System Context Diagram](images/structurizr-SystemContext-001.png)
+
+### Container View
+Shows the major containers and how they communicate:
+![Container View Diagram](images/structurizr-ContainerView-key.png)
+![Container View Diagram](images/structurizr-ContainerView.png)
+
+
 
 These diagrams provide a clear understanding of how different components interact within the system.
 
