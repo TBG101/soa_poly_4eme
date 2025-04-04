@@ -4,95 +4,88 @@
 - [E-Commerce System](#e-commerce-system)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
-- [c4 model](#c4-model)
+  - [Technologies Used](#technologies-used)
+  - [Architecture](#architecture)
+  - [C4 Model](#c4-model)
+  - [Setup and Installation](#setup-and-installation)
+    - [Prerequisites](#prerequisites)
+    - [Steps to Run the Project](#steps-to-run-the-project)
+  - [Usage](#usage)
+  - [Future Improvements](#future-improvements)
+  - [Contributors](#contributors)
 
 ## Overview
-E-Commerce System is an e-commerce platform built with microservices.
+E-Commerce System is an advanced, full-stack e-commerce platform designed as a microservices-based architecture. This project was developed as part of a university assignment at **Polytechnique Sousse**.
 
-# c4 model 
-site Link https://structurizr.com/dsl
+## Technologies Used
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB
+- **Messaging System**: Kafka
+- **APIs**:
+  - GraphQL
+  - Protocol Buffers (ProtoBuf)
+- **Frontend**: (Mention the frontend technology if applicable, e.g., React, Angular, Vue.js)
+- **Containerization & Deployment**: (Mention Docker, Kubernetes, or any CI/CD tools used, if any)
 
-workspace "E-Commerce System" "An e-commerce platform using microservices" {
+## Architecture
+This e-commerce system follows a microservices-based architecture. The key services include:
+- **User Service**: Handles authentication and user management.
+- **Product Service**: Manages product catalog.
+- **Order Service**: Processes orders and transactions.
+- **Payment Service**: Manages payments and transactions.
+- **Notification Service**: Sends order updates and promotional notifications.
+- **API Gateway**: Serves as a single entry point for client requests, using GraphQL and Protocol Buffers for communication.
 
-    !identifiers hierarchical
+## C4 Model
+The system architecture is illustrated using the **C4 model** diagrams, which are available in the `/images` directory:
+- `structurizr-ContainerView-key.png`
+- `structurizr-ContainerView.png`
+- `structurizr-SystemContext-001.png`
+- `structurizr-SystemContext-key.png`
 
-    model {
-        u = person "User"
+These diagrams provide a clear understanding of how different components interact within the system.
 
-        ss = softwareSystem "E-Commerce System" {
-            wa = container "Web Application" "Frontend UI for users"
-            gateway = container "API Gateway" "Handles requests and routes to microservices"
+## Setup and Installation
+### Prerequisites
+- Install **Node.js** and **npm**
+- Install **MongoDB**
+- Install **Kafka** and configure it properly
 
-            userService = container "User Service" "Manages authentication and user profiles"
-            productService = container "Product Service" "Handles product catalog and inventory"
-            orderService = container "Order Service" "Processes orders and payments"
+### Steps to Run the Project
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/ecommerce-system.git
+   cd ecommerce-system
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Start Kafka:
+   ```sh
+   (Follow Kafka installation and startup instructions based on your OS)
+   ```
+4. Start the services:
+   ```sh
+   npm start
+   ```
+5. Access the API via GraphQL Playground or any API testing tool.
 
-            kafka = container "Kafka" "Message broker for asynchronous communication" {
-                tags "Message Broker"
-            }
+## Usage
+- Register and log in as a user.
+- Browse and add products to the cart.
+- Place orders and proceed to checkout.
+- Track orders via notifications.
 
-            dbUser = container "User Database" {
-                tags "Database"
-            }
-            dbProduct = container "Product Database" {
-                tags "Database"
-            }
-            dbOrder = container "Order Database" {
-                tags "Database"
-            }
+## Future Improvements
+- Implement a recommendation engine.
+- Add support for multiple payment gateways.
+- Deploy using Kubernetes for better scalability.
 
-            u -> wa "Uses"
-            wa -> gateway "Sends API requests"
+## Contributors
+- **Your Name** - Developer
+- **Professor/Supervisor Name** - Supervisor (if applicable)
 
-            gateway -> userService "For authentication and profile management"
-            gateway -> productService "For product details"
-            gateway -> orderService "For order processing"
+---
+Feel free to update this README as your project evolves!
 
-            userService -> dbUser "Reads from and writes to"
-            productService -> dbProduct "Reads from and writes to"
-            orderService -> dbOrder "Reads from and writes to"
-
-            orderService -> kafka "Publishes Order Events"
-            kafka -> productService "Sends Order Events"
-        }
-    }
-
-    views {
-        systemContext ss "SystemContext" {
-            include *
-            autolayout lr
-        }
-
-        container ss "ContainerView" {
-            include *
-            autolayout lr
-        }
-
-        styles {
-            element "Element" {
-                color #ffffff
-            }
-            element "Person" {
-                background #ba1e75
-                shape person
-            }
-            element "Software System" {
-                background #d92389
-            }
-            element "Container" {
-                background #f8289c
-            }
-            element "Database" {
-                shape cylinder
-            }
-            element "Message Broker" {
-                background #ff9900
-                shape hexagon
-            }
-        }
-    }
-
-    configuration {
-        scope softwaresystem
-    }
-}

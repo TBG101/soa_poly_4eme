@@ -20,6 +20,12 @@ workspace "E-Commerce System" "An e-commerce platform using microservices" {
             orderService = container "Order Service" "Processes orders and payments"{
             technology "Node.js, gRPC, Kafka"
         }
+        
+        logginService = container "Logging Service" "Process realtime logging"{
+            technology "Node.js, Kafka, websockets"
+        }
+        
+        
 
             kafka = container "Kafka" "Message broker for asynchronous communication" {
                 tags "Message Broker"
@@ -40,6 +46,8 @@ workspace "E-Commerce System" "An e-commerce platform using microservices" {
 
                 tags "Database"
             }
+            
+            
 
             u -> wa "Uses"
             wa -> gateway "Sends API requests"
@@ -47,13 +55,20 @@ workspace "E-Commerce System" "An e-commerce platform using microservices" {
             gateway -> userService "For authentication and profile management"
             gateway -> productService "For product details"
             gateway -> orderService "For order processing"
+            gateway -> logginService "For sending realtime logging data"
+            orderService -> productService "For updating product data" 
+            
 
             userService -> dbUser "Reads from and writes to"
             productService -> dbProduct "Reads from and writes to"
             orderService -> dbOrder "Reads from and writes to"
-
+        
             orderService -> kafka "Publishes Order Events"
             kafka -> productService "Sends Order Events"
+            
+            logginService -> kafka "Sends Logging Events"
+            
+            
         }
     }
 
