@@ -22,7 +22,7 @@ E-Commerce System is an advanced, full-stack e-commerce platform designed as a m
 - **Database**: MongoDB
 - **Messaging System**: Kafka
 - **APIs**:
-  - GraphQL
+  - **GraphQL**
   - Protocol Buffers (ProtoBuf)
 - **Frontend**: React.js
 - **Containerization & Deployment**: Docker

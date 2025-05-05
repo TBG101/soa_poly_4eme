@@ -36,10 +36,19 @@ const orderProto = protoLoader.loadSync("./protos/order.proto", {
   oneofs: true,
 });
 
+const logProto = protoLoader.loadSync("./protos/log.proto", {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
+
 // Load gRPC Clients
 const UserService = grpc.loadPackageDefinition(userProto).UserService;
 const ProductService = grpc.loadPackageDefinition(productProto).ProductService;
 const OrderService = grpc.loadPackageDefinition(orderProto).OrderService;
+const LogService = grpc.loadPackageDefinition(logProto).LogService;
 
 // Create gRPC Clients
 const userClient = new UserService(
@@ -57,9 +66,14 @@ const orderClient = new OrderService(
   grpc.credentials.createInsecure()
 );
 
+const logClient = new LogService(
+  "localhost:5004",
+  grpc.credentials.createInsecure()
+);
+
 // Load GraphQL Schema and Resolvers
 const schema = await getSchema();
-const resolvers = createResolvers(userClient, productClient, orderClient);
+const resolvers = createResolvers(userClient, productClient, orderClient, logClient);
 
 // Set up Apollo Server
 const server = new ApolloServer({

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package apiGateway;
+
+// Log message sent from frontend to backend
+message LogMessage {
+    string level = 1; // Log level (e.g., INFO, WARN, ERROR)
+    string message = 2; // Log message content
+    string timestamp = 3; // Timestamp of the log
+    string source = 4; // Source of the log (e.g., component or module name)
+    string user_id= 5; // User ID associated with the log, if applicable
+}
+
+// Service definition for sending logs
+service LogService {
+    rpc SendLog(LogMessage) returns LogResponse;
+}
+
+// Response message for log submission
+message LogResponse {
+    bool success = 1; // Indicates if the log was successfully received
+    string error = 2; // Error message if applicable
+}

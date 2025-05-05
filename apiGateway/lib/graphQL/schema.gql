@@ -44,10 +44,20 @@ type Query {
   getOrderById(orderId: ID!): Order
   getOrdersByUserId: [Order]
 }
-
 input ProductDetail {
   productId: ID
   quantity: Int
+}
+
+type Logs {
+  level: String
+  message: String
+  source: String
+}
+
+type LogResponse {
+  success: Boolean
+  error: String
 }
 
 type Mutation {
@@ -66,4 +76,6 @@ type Mutation {
   ): Product
 
   login(username: String!, password: String!): jwtToken!
+
+  sendLogs(level: String!, message: String!, source: String!): LogResponse
 }

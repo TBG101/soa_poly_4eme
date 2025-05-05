@@ -1,7 +1,7 @@
-export const createResolvers = (userClient, productClient, orderClient) => {
+export const createResolvers = (userClient, productClient, orderClient, logClient) => {
   return {
     Query: {
-      getUser: (_, {}, { user }) =>
+      getUser: (_, { }, { user }) =>
         new Promise((resolve, reject) => {
           const { id } = user;
           if (!id) {
@@ -21,7 +21,7 @@ export const createResolvers = (userClient, productClient, orderClient) => {
           });
         }),
 
-      getOrdersByUserId: (_, {}, { user }) => {
+      getOrdersByUserId: (_, { }, { user }) => {
         return new Promise((resolve, reject) => {
           const { id } = user;
           if (!id) {
@@ -101,7 +101,7 @@ export const createResolvers = (userClient, productClient, orderClient) => {
             resolve(response);
           });
 
-          
+
         });
       },
 
@@ -117,6 +117,9 @@ export const createResolvers = (userClient, productClient, orderClient) => {
           });
         });
       },
-    },
+      sendLogs(_, { message }, { user }) {
+        
+      },
+    }
   };
 };
