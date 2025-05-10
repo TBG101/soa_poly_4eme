@@ -4,7 +4,7 @@ import grpc from "@grpc/grpc-js";
 import protoLoader from "@grpc/proto-loader";
 import dotenv from "dotenv";
 import { createResolvers } from "./lib/graphQL/gplResolvers.js";
-import { getSchema } from "./lib/graphQL/SchemaBuilder.js";
+import { getSchema } from "./lib/graphQL/schemaBuilder.js";
 import { addResolversToSchema } from "@graphql-tools/schema";
 import jwt from "jsonwebtoken";
 dotenv.config({
@@ -36,19 +36,10 @@ const orderProto = protoLoader.loadSync("./protos/order.proto", {
   oneofs: true,
 });
 
-const logProto = protoLoader.loadSync("./protos/log.proto", {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
-
 // Load gRPC Clients
 const UserService = grpc.loadPackageDefinition(userProto).UserService;
 const ProductService = grpc.loadPackageDefinition(productProto).ProductService;
 const OrderService = grpc.loadPackageDefinition(orderProto).OrderService;
-const LogService = grpc.loadPackageDefinition(logProto).LogService;
 
 // Create gRPC Clients
 const userClient = new UserService(
@@ -65,15 +56,9 @@ const orderClient = new OrderService(
   "localhost:5003",
   grpc.credentials.createInsecure()
 );
-
-const logClient = new LogService(
-  "localhost:5004",
-  grpc.credentials.createInsecure()
-);
-
 // Load GraphQL Schema and Resolvers
 const schema = await getSchema();
-const resolvers = createResolvers(userClient, productClient, orderClient, logClient);
+const resolvers = createResolvers(userClient, productClient, orderClient);
 
 // Set up Apollo Server
 const server = new ApolloServer({

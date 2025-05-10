@@ -50,8 +50,6 @@ consumer.run({
         console.error("Product not found:", product.productId);
       }
     });
-
-
   },
 });
 

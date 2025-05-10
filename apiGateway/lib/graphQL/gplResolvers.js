@@ -1,7 +1,7 @@
-export const createResolvers = (userClient, productClient, orderClient, logClient) => {
+export const createResolvers = (userClient, productClient, orderClient) => {
   return {
     Query: {
-      getUser: (_, { }, { user }) =>
+      getUser: (_, {}, { user }) =>
         new Promise((resolve, reject) => {
           const { id } = user;
           if (!id) {
@@ -21,7 +21,7 @@ export const createResolvers = (userClient, productClient, orderClient, logClien
           });
         }),
 
-      getOrdersByUserId: (_, { }, { user }) => {
+      getOrdersByUserId: (_, {}, { user }) => {
         return new Promise((resolve, reject) => {
           const { id } = user;
           if (!id) {
@@ -100,8 +100,6 @@ export const createResolvers = (userClient, productClient, orderClient, logClien
             if (err) reject(err);
             resolve(response);
           });
-
-
         });
       },
 
@@ -117,9 +115,31 @@ export const createResolvers = (userClient, productClient, orderClient, logClien
           });
         });
       },
-      sendLogs(_, { message }, { user }) {
-        
+      sendLogs(_, { message, source, level }, { user }) {
+        return new Promise((resolve, reject) => {
+          console.log("Received log:", message, source, level);
+
+          if (!message) {
+            return reject(new Error("Message is required"));
+          }
+
+          fetch("http://localhost:5004/logs", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message, source, level }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                return reject(new Error("Failed to send logs"));
+              }
+              return response.json();
+            })
+            .then((data) => resolve(data))
+            .catch((err) => reject(err));
+        });
       },
-    }
+    },
   };
 };
