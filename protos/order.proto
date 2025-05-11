@@ -29,14 +29,26 @@ message ListOrder{
     repeated Order orders = 1;
 }
 
+message GetAllOrdersRequest {
+    int32 page = 1;
+    int32 limit = 2;
+}
+
+message OrderListResponse {
+    int32 page = 1;
+    int32 limit = 2;
+    int32 total = 3;
+    int32 totalPage = 4;
+    repeated Order orders = 5;
+}
+
 service OrderService{
     rpc GetOrdersByUserId(UserId) returns (ListOrder);
     rpc GetOrderById(OrderId) returns (Order);
     rpc CreateOrder(CreateOrderRequest) returns (Order);
-
-    // TODO
     rpc UpdateOrder(Order) returns (Order);
     rpc DeleteOrder(OrderId) returns (Order);
+    rpc GetAllOrders(GetAllOrdersRequest) returns (OrderListResponse);
 }
 
 

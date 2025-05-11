@@ -48,41 +48,52 @@ async function saveLogsToDatabase(logs) {
   }
 }
 
+let logBatch = [];
+let batchTimer;
+
+const BATCH_SIZE = 10;
+const BATCH_TIMEOUT_MS = 5000;
+
+async function flushLogs() {
+  if (logBatch.length === 0) return;
+
+  const batchToSave = [...logBatch];
+  logBatch = [];
+
+  try {
+    await saveLogsToDatabase(batchToSave);
+  } catch (err) {
+    console.error("Error saving logs:", err);
+    // Optional: add retry logic here
+  }
+}
+
+function scheduleFlush() {
+  if (batchTimer) clearTimeout(batchTimer);
+  batchTimer = setTimeout(() => flushLogs(), BATCH_TIMEOUT_MS);
+}
+
 export async function kafkaLogConsumer() {
   const consumer = kafka.consumer({ groupId: "logging-group" });
   await consumer.connect();
   await consumer.subscribe({ topic: "logs", fromBeginning: true });
 
-  let logBatch = [];
-
   await consumer.run({
-    eachBatch: async ({
-      batch,
-      resolveOffset,
-      heartbeat,
-      commitOffsetsIfNecessary,
-    }) => {
-      for (const message of batch.messages) {
-        const log = JSON.parse(message.value.toString());
-        console.log("Received log:", log);
-        logBatch.push(log);
+    eachMessage: async ({ message }) => {
+      const log = JSON.parse(message.value.toString());
+      logBatch.push(log);
 
-        if (logBatch.length >= 10) {
-          await saveLogsToDatabase(logBatch);
-          logBatch = [];
-        }
-
-        resolveOffset(message.offset);
-        await heartbeat();
+      if (logBatch.length >= BATCH_SIZE) {
+        await flushLogs();
+      } else {
+        scheduleFlush();
       }
-      // Save any remaining logs at the end of the batch
-      if (logBatch.length > 0) {
-        await saveLogsToDatabase(logBatch);
-        logBatch = [];
-      }
-      await commitOffsetsIfNecessary();
-      console.log("Offsets committed");
-      console.log("Batch processed");
     },
   });
 }
+
+// Flush remaining logs on shutdown
+process.on("SIGINT", async () => {
+  await flushLogs();
+  process.exit();
+});

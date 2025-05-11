@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.13.8",
+    "@types/react-router-dom": "^5.3.3",
+    "express-rate-limit": "^7.5.0",
+    "graphql": "^16.11.0"
+  }
+}

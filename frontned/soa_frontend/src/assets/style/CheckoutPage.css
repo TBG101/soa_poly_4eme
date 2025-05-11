@@ -1,0 +1,17 @@
+.checkout-container {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.checkout-title {
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.checkout-description {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}

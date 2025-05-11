@@ -10,7 +10,7 @@ dotenv.config({
 });
 
 // Load gRPC Protobuf
-const orderProto = protoLoader.loadSync("./protos/order.proto");
+const orderProto = protoLoader.loadSync(process.env.PROTO_SCHEMA_PATH + "/order.proto");
 const orderGrpc = grpc.loadPackageDefinition(orderProto).OrderService;
 
 mongoose.connect(process.env.MONGO_URI, {

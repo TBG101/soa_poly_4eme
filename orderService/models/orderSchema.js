@@ -8,6 +8,7 @@ const OrderSchema = new mongoose.Schema({
     },
   ],
   status: String,
+  price: Number
 });
 const Order = mongoose.model("Order", OrderSchema);
 

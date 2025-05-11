@@ -36,6 +36,14 @@ type ProductListResponse {
   products: [Product!]
 }
 
+type OrderListResponse {
+  page: Int
+  limit: Int
+  total: Int
+  totalPage: Int
+  orders: [Order!]
+}
+
 type Query {
   getUser: User
   getProduct(id: ID!): Product
@@ -43,7 +51,9 @@ type Query {
   getOrder(id: ID!): Order
   getOrderById(orderId: ID!): Order
   getOrdersByUserId: [Order]
+  getAllOrders(page: Int, limit: Int): OrderListResponse
 }
+
 input ProductDetail {
   productId: ID
   quantity: Int
@@ -73,6 +83,22 @@ type Mutation {
     stock: Int!
     description: String!
     price: Float!
+  ): Product
+
+  updateProduct(
+    id: ID!
+    name: String
+    description: String
+    stock: Int
+    price: Float
+  ): Product
+
+  deleteProduct(
+    id: ID!
+    name: String
+    description: String
+    stock: Int
+    price: Float
   ): Product
 
   login(username: String!, password: String!): jwtToken!

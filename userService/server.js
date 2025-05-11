@@ -10,7 +10,7 @@ dotenv.config({
 });
 
 // Load gRPC Protobuf
-const userProto = protoLoader.loadSync("./protos/user.proto");
+const userProto = protoLoader.loadSync(process.env.PROTO_SCHEMA_PATH + "/user.proto");
 const userGrpc = grpc.loadPackageDefinition(userProto).UserService;
 
 // Connect to MongoDB

@@ -1,61 +1,45 @@
 import Order from "../models/orderSchema.js";
-import { productClient } from "./grpcProduct.js";
+import { productClient } from "./grpcProductClient.js";
 import { producer } from "./kafka.js";
 
+// Get orders by user ID (returns ListOrder)
 const GetOrdersByUserId = async (call, callback) => {
-  const userId = call.request.userId;
+  const userId = call.request.id;
   const orders = await Order.find({ userId });
-
-  if (!orders) {
-    return callback(null, { orders: [] });
-  }
-
-  const userOrders = orders.map((order) => {
-    return {
-      id: order._id,
-      userId: order ? order.userId : null,
-      products: order.products.map((product) => {
-        return {
-          id: product.productId,
-          quantity: product.quantity,
-        };
-      }),
-      price: order.price,
-    };
-  });
-
+  const userOrders = orders.map((order) => ({
+    id: order._id.toString(),
+    userId: order.userId,
+    products: order.products.map((product) => ({
+      productId: product.productId,
+      quantity: product.quantity,
+    })),
+    price: order.price,
+  }));
   callback(null, { orders: userOrders });
 };
 
+// Get order by ID (returns Order)
 const GetOrderById = async (call, callback) => {
-  const orderId = call.request.orderId;
-
+  const orderId = call.request.id;
   const order = await Order.findById(orderId);
-
+  if (!order) return callback(new Error("Order not found"));
   const userOrder = {
-    id: order._id,
+    id: order._id.toString(),
     userId: order.userId,
-    products: order.products.map((product) => {
-      return {
-        id: product.id,
-        quantity: product.quantity,
-      };
-    }),
+    products: order.products.map((product) => ({
+      productId: product.productId,
+      quantity: product.quantity,
+    })),
     price: order.price,
   };
-
   callback(null, userOrder);
 };
 
+// Create order (returns Order)
 const CreateOrder = async (call, callback) => {
   const { userId, products } = call.request;
-  if (!userId) {
-    return callback(new Error("User ID is required"));
-  }
-  if (!products || products.length === 0) {
-    return callback(new Error("No products provided"));
-  }
-
+  if (!userId) return callback(new Error("User ID is required"));
+  if (!products || products.length === 0) return callback(new Error("No products provided"));
   let price = 0;
   for (const element of products) {
     if (!element.productId || !element.quantity || element.quantity <= 0) {
@@ -63,30 +47,24 @@ const CreateOrder = async (call, callback) => {
     }
     await new Promise((resolve, reject) => {
       productClient.GetProduct({ id: element.productId }, (err, response) => {
-        if (err) {
-          reject(new Error("Product not found"));
-        } else {
+        if (err) reject(new Error("Product not found"));
+        else {
           price += response.price * element.quantity;
           resolve(response);
         }
       });
     });
   }
-
   new Order({
-    userId: userId,
-    products: products.map((product) => {
-      return {
-        productId: product.productId,
-        quantity: product.quantity,
-      };
-    }),
-    price: price,
+    userId,
+    products: products.map((product) => ({
+      productId: product.productId,
+      quantity: product.quantity,
+    })),
+    price,
   })
     .save()
     .then(async (order) => {
-      console.log("order_placed", order);
-
       await producer.send({
         topic: "order_placed",
         messages: [
@@ -96,74 +74,75 @@ const CreateOrder = async (call, callback) => {
           },
         ],
       });
-
       callback(null, {
-        id: order.id,
-        userId: userId,
-        products: products.map((product) => {
-          return {
-            productId: product.productId,
-            quantity: product.quantity,
-          };
-        }),
-        price: price,
+        id: order._id.toString(),
+        userId,
+        products: products.map((product) => ({
+          productId: product.productId,
+          quantity: product.quantity,
+        })),
+        price,
       });
     })
     .catch((err) => {
-      console.error("Error creating order:", err);
       callback(new Error("Failed to create order"));
     });
 };
 
+// Update order (returns Order)
 const UpdateOrder = async (call, callback) => {
-  const orderId = call.request.orderId;
+  const { id, userId, products, price } = call.request;
   const updatedOrder = {
-    userId: call.request.userId,
-    products: call.request.products.map((product) => {
-      return {
-        id: product.id,
-        quantity: product.quantity,
-      };
-    }),
-    price: call.request.price,
+    userId,
+    products: products.map((product) => ({
+      productId: product.productId,
+      quantity: product.quantity,
+    })),
+    price,
   };
-
-  await Order.findByIdAndUpdate(
-    orderId,
-    updatedOrder,
-    { new: true },
-    (err, order) => {
-      if (err || !order) {
-        return callback(new Error("Order not found"));
-      }
-
-      const userOrder = {
-        id: order._id,
-        userId: order.userId,
-        products: order.products.map((product) => {
-          return {
-            id: product.id,
-            quantity: product.quantity,
-          };
-        }),
-        price: order.price,
-      };
-
-      callback(null, { order: userOrder });
-    }
-  );
+  const order = await Order.findByIdAndUpdate(id, updatedOrder, { new: true });
+  if (!order) return callback(new Error("Order not found"));
+  callback(null, {
+    id: order._id.toString(),
+    userId: order.userId,
+    products: order.products.map((product) => ({
+      productId: product.productId,
+      quantity: product.quantity,
+    })),
+    price: order.price,
+  });
 };
 
-const DeleteOrder = (call, callback) => {
-  const orderId = call.request.orderId;
-
-  Order.findByIdAndDelete(orderId, (err) => {
-    if (err) {
-      return callback(new Error("Order not found"));
-    }
-
-    callback(null, { success: true });
+// Delete order (returns Order)
+const DeleteOrder = async (call, callback) => {
+  const orderId = call.request.id;
+  const order = await Order.findByIdAndDelete(orderId);
+  if (!order) return callback(new Error("Order not found"));
+  callback(null, {
+    id: order._id.toString(),
+    userId: order.userId,
+    products: order.products.map(p => ({ productId: p.productId, quantity: p.quantity })),
+    price: order.price,
   });
+};
+
+// Get all orders with pagination (returns OrderListResponse)
+const GetAllOrders = async (call, callback) => {
+  const { page, limit } = call.request;
+  const pageNum = page > 0 ? page : 1;
+  const lim = limit > 0 ? limit : 10;
+  const total = await Order.countDocuments();
+  const orders = await Order.find()
+    .skip((pageNum - 1) * lim)
+    .limit(lim);
+  const orderList = orders.map(order => ({
+    id: order._id.toString(),
+    userId: order.userId,
+    products: order.products.map(p => ({ productId: p.productId, quantity: p.quantity })),
+    price: order.price,
+  }));
+  const totalPage = Math.ceil(total / lim);
+  callback(null, { page: pageNum, limit: lim, total, totalPage, orders: orderList });
 };
 
 export const grpcOrderMethods = {
@@ -172,4 +151,5 @@ export const grpcOrderMethods = {
   CreateOrder,
   UpdateOrder,
   DeleteOrder,
+  GetAllOrders,
 };
