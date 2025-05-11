@@ -39,7 +39,8 @@ const GetOrderById = async (call, callback) => {
 const CreateOrder = async (call, callback) => {
   const { userId, products } = call.request;
   if (!userId) return callback(new Error("User ID is required"));
-  if (!products || products.length === 0) return callback(new Error("No products provided"));
+  if (!products || products.length === 0)
+    return callback(new Error("No products provided"));
   let price = 0;
   for (const element of products) {
     if (!element.productId || !element.quantity || element.quantity <= 0) {
@@ -121,7 +122,10 @@ const DeleteOrder = async (call, callback) => {
   callback(null, {
     id: order._id.toString(),
     userId: order.userId,
-    products: order.products.map(p => ({ productId: p.productId, quantity: p.quantity })),
+    products: order.products.map((p) => ({
+      productId: p.productId,
+      quantity: p.quantity,
+    })),
     price: order.price,
   });
 };
@@ -135,14 +139,23 @@ const GetAllOrders = async (call, callback) => {
   const orders = await Order.find()
     .skip((pageNum - 1) * lim)
     .limit(lim);
-  const orderList = orders.map(order => ({
+  const orderList = orders.map((order) => ({
     id: order._id.toString(),
     userId: order.userId,
-    products: order.products.map(p => ({ productId: p.productId, quantity: p.quantity })),
+    products: order.products.map((p) => ({
+      productId: p.productId,
+      quantity: p.quantity,
+    })),
     price: order.price,
   }));
   const totalPage = Math.ceil(total / lim);
-  callback(null, { page: pageNum, limit: lim, total, totalPage, orders: orderList });
+  callback(null, {
+    page: pageNum,
+    limit: lim,
+    total,
+    totalPage,
+    orders: orderList,
+  });
 };
 
 export const grpcOrderMethods = {

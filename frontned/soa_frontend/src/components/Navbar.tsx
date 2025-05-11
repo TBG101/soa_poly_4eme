@@ -1,18 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../assets/style/HomePage.css";
 
 const Navbar: React.FC = () => {
   const [username, setUsername] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("auth-token");
-    if (token) {
-      // Simulate fetching the username from the token or an API
-      const decodedToken = JSON.parse(atob(token.split(".")[1])); // Assuming JWT
-      setUsername(decodedToken.username);
-    }
+    const updateUsername = () => {
+      const token = localStorage.getItem("auth-token");
+      if (token) {
+        try {
+          const decodedToken = JSON.parse(atob(token.split(".")[1]));
+          setUsername(decodedToken.username);
+        } catch {
+          setUsername(null);
+        }
+      } else {
+        setUsername(null);
+      }
+    };
+
+    updateUsername();
+
+    window.addEventListener("storage", updateUsername);
+    window.addEventListener("auth-changed", updateUsername);
+
+    return () => {
+      window.removeEventListener("storage", updateUsername);
+      window.removeEventListener("auth-changed", updateUsername);
+    };
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth-token");
+    window.dispatchEvent(new Event("auth-changed"));
+    setUsername(null);
+    navigate("/login");
+  };
 
   return (
     <nav className="navbar">
@@ -34,7 +59,12 @@ const Navbar: React.FC = () => {
 
       <div className="navbar-auth">
         {username ? (
-          <span>Welcome, {username}</span>
+          <>
+            <span>Welcome, {username}</span>
+            <button onClick={handleLogout} style={{ marginLeft: "1rem" }}>
+              Logout
+            </button>
+          </>
         ) : (
           <>
             <Link to="/login">Login</Link>

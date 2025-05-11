@@ -12,6 +12,7 @@ const SignupPage = () => {
     try {
       await createUser({ variables: { username, password } });
       alert("Signup successful!");
+      window.dispatchEvent(new Event("auth-changed"));
     } catch (err) {
       console.error(err);
     }

@@ -10,8 +10,11 @@ dotenv.config({
 });
 
 // Load gRPC Protobuf
-const orderProto = protoLoader.loadSync(process.env.PROTO_SCHEMA_PATH + "/order.proto");
-const orderGrpc = grpc.loadPackageDefinition(orderProto).OrderService;
+const orderProto = protoLoader.loadSync(
+  process.env.PROTO_SCHEMA_PATH + "/order.proto"
+);
+const grpcPackage = grpc.loadPackageDefinition(orderProto);
+const orderGrpc = grpcPackage.OrderService;
 
 mongoose.connect(process.env.MONGO_URI, {
   dbName: "orders",
@@ -19,6 +22,8 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Start gRPC Server
 const grpcServer = new grpc.Server();
+
+// Make sure grpcOrderMethods keys match the .proto service definition exactly
 grpcServer.addService(orderGrpc.service, grpcOrderMethods);
 
 grpcServer.bindAsync(

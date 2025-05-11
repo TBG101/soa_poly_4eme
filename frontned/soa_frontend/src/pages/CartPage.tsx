@@ -32,14 +32,17 @@ const CartPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    setProducts([]); // Reset products before fetching
     cartItems.forEach((item) => {
-      console.log("Fetching product with ID:", item.id);
       fetchProductById({ variables: { id: item.id } });
     });
-    // cartItems.forEach((id) => {
-    //   fetchProductById({ variables: { id } });
-    // });
   }, [cartItems, fetchProductById]);
+
+  const handleRemove = (id: string) => {
+    const updatedCart = cartItems.filter((item) => item.id !== id);
+    setCartItems(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
 
   return (
     <div className="cart-container">
@@ -53,7 +56,12 @@ const CartPage: React.FC = () => {
                 <p className="cart-item-description">{product.description}</p>
                 <p className="cart-item-price">Price: ${product.price}</p>
               </div>
-              <button className="cart-item-remove">Remove</button>
+              <button
+                className="cart-item-remove"
+                onClick={() => handleRemove(product.id)}
+              >
+                Remove
+              </button>
             </div>
           ))}
         </div>

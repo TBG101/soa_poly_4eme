@@ -17,8 +17,10 @@ const LoginPage = () => {
       if (token) {
         // Save token to localStorage
         localStorage.setItem("auth-token", token);
+        // Dispatch custom event
+        window.dispatchEvent(new Event("auth-changed"));
         // Navigate to the dashboard or another page
-        navigate("/dashboard");
+        navigate("/");
       }
     } catch (err) {
       console.error(err);

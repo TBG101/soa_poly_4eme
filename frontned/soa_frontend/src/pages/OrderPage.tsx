@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_ORDERS_BY_USER_ID } from "../api/graphqlQueries";
+import { useNavigate } from "react-router-dom";
 
 interface Order {
   id: string;
@@ -10,10 +11,21 @@ interface Order {
 
 const OrderPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const navigate = useNavigate();
+
+  // Check for auth token
+  const token = localStorage.getItem("auth-token");
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
   const { loading, error, data } = useQuery(GET_ORDERS_BY_USER_ID, {
+    skip: !token,
     context: {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("auth-token")}`,
+        Authorization: `Bearer ${token}`,
       },
     },
   });
@@ -24,6 +36,7 @@ const OrderPage: React.FC = () => {
     }
   }, [data]);
 
+  if (!token) return null;
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
