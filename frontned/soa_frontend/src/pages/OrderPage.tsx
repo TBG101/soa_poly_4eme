@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_ORDERS_BY_USER_ID } from "../api/graphqlQueries";
 import { useNavigate } from "react-router-dom";
+import styles from "./OrderPage.module.css";
 
 interface Order {
   id: string;
@@ -41,12 +42,12 @@ const OrderPage: React.FC = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="order-container">
+    <div className={styles["order-container"]}>
       <h1>Your Orders</h1>
       {orders.length > 0 ? (
-        <div className="order-list">
+        <div className={styles["order-list"]}>
           {orders.map((order) => (
-            <div key={order.id} className="order-item">
+            <div key={order.id} className={styles["order-item"]}>
               <h2>Order ID: {order.id}</h2>
               <p>Total Price: ${order.price}</p>
               <ul>

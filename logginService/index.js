@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 import { logToKafka, initProducer, kafkaLogConsumer } from "./lib/kafka.js";
 import setupWebSocketServer from "./lib/websocket.js";
 import setupRoutes from "./routes/logRoutes.js";
-
+import cors from "cors";
+// Enable CORS
 // Load environment variables
 dotenv.config({ path: "../.env" });
 
@@ -18,6 +19,8 @@ mongoose.connect(process.env.MONGO_URI, { dbName: "Log" });
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
 
 // Initialize Kafka producer
 await initProducer().catch((error) => {

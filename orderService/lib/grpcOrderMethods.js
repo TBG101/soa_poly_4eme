@@ -4,18 +4,22 @@ import { producer } from "./kafka.js";
 
 // Get orders by user ID (returns ListOrder)
 const GetOrdersByUserId = async (call, callback) => {
-  const userId = call.request.id;
-  const orders = await Order.find({ userId });
-  const userOrders = orders.map((order) => ({
-    id: order._id.toString(),
-    userId: order.userId,
-    products: order.products.map((product) => ({
-      productId: product.productId,
-      quantity: product.quantity,
-    })),
-    price: order.price,
-  }));
-  callback(null, { orders: userOrders });
+  try {
+    const userId = call.request.id;
+    const orders = await Order.find({ userId });
+    const userOrders = orders.map((order) => ({
+      id: order._id.toString(),
+      userId: order.userId,
+      products: order.products.map((product) => ({
+        productId: product.productId,
+        quantity: product.quantity,
+      })),
+      price: order.price,
+    }));
+    callback(null, { orders: userOrders });
+  } catch (error) {
+    callback(new Error("Failed to fetch orders by user ID"));
+  }
 };
 
 // Get order by ID (returns Order)

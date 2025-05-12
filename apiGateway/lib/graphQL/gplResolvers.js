@@ -13,7 +13,10 @@ export const createResolvers = (userClient, productClient, orderClient) => {
 
       getOrder: (_, { id }, { user }) => orderController.getOrder(orderClient, id),
 
-      getOrdersByUserId: (_, { }, { user }) => orderController.getOrdersByUserId(orderClient, user),
+      getOrdersByUserId: async (_, { }, { user }) => {
+        const response = await orderController.getOrdersByUserId(orderClient, user);
+        return response.orders || []; // Ensure it returns an array
+      },
 
       getProductList: (_, { page, limit, search }, { user }) =>
         productController.getProductList(productClient, page, limit, search),
