@@ -39,7 +39,6 @@
     - [gRPC Services](#grpc-services)
   - [🧑‍💻 Development](#-development)
     - [Real-time Communication](#real-time-communication)
-  - [📄 License](#-license)
 
 ## 🚀 Project Overview
 
@@ -298,9 +297,4 @@ wss.broadcastLog = (log) => {
     });
 };
 ```
-
-## 📄 License
-
-This project was developed as a university assignment at Polytechnique Sousse and is provided for educational purposes.
-
 
